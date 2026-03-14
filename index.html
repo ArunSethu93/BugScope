@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>BugScope — AI Website Scanner</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+  <!-- Ambient background -->
+  <canvas id="bgCanvas" aria-hidden="true"></canvas>
+  <div class="scan-line" id="scanLine" aria-hidden="true"></div>
+  <div class="top-progress" id="topProgress" aria-hidden="true"></div>
+
+  <!-- Custom cursor -->
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-trail" id="cursorTrail"></div>
+
+  <main class="app">
+
+    <!-- ══ HEADER ══ -->
+    <header class="header" id="header">
+      <div class="header-inner">
+        <div class="brand">
+          <div class="brand-mark">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <circle cx="10" cy="10" r="8" stroke="#0a0d0f" stroke-width="1.8"/>
+              <path d="M6.5 10l2.2 2.2L13.5 7.5" stroke="#0a0d0f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="10" cy="10" r="3.5" stroke="#0a0d0f" stroke-width="1.2" opacity="0.4"/>
+            </svg>
+          </div>
+          <span class="brand-name">Bug<em>Scope</em></span>
+          <span class="brand-ver">v2.1</span>
+        </div>
+        <nav class="header-nav">
+          <span class="nav-pill active">Scanner</span>
+          <span class="nav-pill">Reports</span>
+          <span class="nav-pill">API</span>
+        </nav>
+        <div class="header-status">
+          <span class="status-dot"></span>
+          <span class="status-txt">All systems online</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="page-wrap">
+
+      <!-- ══ HERO SCAN ══ -->
+      <section class="hero" id="heroSection">
+        <div class="hero-label">WEBSITE INTELLIGENCE PLATFORM</div>
+        <h1 class="hero-title">
+          Scan. Analyse.<br/><span class="hero-accent">Dominate bugs.</span>
+        </h1>
+        <p class="hero-sub">Drop any URL — get AI-powered frontend, backend &amp; security insights in seconds.</p>
+
+        <div class="scan-card" id="scanCard">
+          <div class="scan-input-row">
+            <div class="input-prefix">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.4"/>
+                <path d="M9.5 9.5L12 12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <input
+              class="scan-input"
+              id="urlInput"
+              type="text"
+              placeholder="https://your-website.com"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <button class="scan-btn" id="scanBtn" aria-label="Start scan">
+              <span class="scan-btn-text">Scan</span>
+              <span class="scan-btn-icon">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+              <div class="btn-ripple" id="btnRipple"></div>
+            </button>
+          </div>
+
+          <div class="scan-progress-wrap" id="scanProgressWrap">
+            <div class="scan-steps" id="scanSteps"></div>
+            <div class="scan-bar-wrap">
+              <div class="scan-bar" id="scanBar"></div>
+            </div>
+          </div>
+
+          <div class="error-msg" id="errorMsg"></div>
+
+          <div class="quick-links" id="quickLinks">
+            <span class="ql-label">Try:</span>
+            <button class="ql-btn" data-url="https://github.com">github.com</button>
+            <button class="ql-btn" data-url="https://stripe.com">stripe.com</button>
+            <button class="ql-btn" data-url="https://vercel.com">vercel.com</button>
+            <button class="ql-btn" data-url="https://notion.so">notion.so</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ RESULTS ZONE ══ -->
+      <div class="results-zone" id="resultsZone">
+
+        <!-- ── COLLAPSIBLE PREVIEW PANEL ── -->
+        <div class="panel" id="previewPanel">
+          <div class="panel-header" id="previewToggle" role="button" tabindex="0" aria-expanded="true" aria-controls="previewBody">
+            <div class="panel-header-left">
+              <div class="panel-icon icon-preview">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <rect x="1" y="2" width="12" height="10" rx="2" stroke="currentColor" stroke-width="1.3"/>
+                  <path d="M1 5h12" stroke="currentColor" stroke-width="1.3"/>
+                  <circle cx="3.5" cy="3.5" r="0.8" fill="currentColor"/>
+                  <circle cx="5.8" cy="3.5" r="0.8" fill="currentColor"/>
+                </svg>
+              </div>
+              <span class="panel-title">Live Preview</span>
+              <span class="panel-badge" id="previewBadge">Loading…</span>
+            </div>
+            <div class="panel-header-right">
+              <span class="panel-url" id="previewUrl"></span>
+              <button class="panel-action-btn" id="newTabBtn" title="Open in new tab" tabindex="-1">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M5 2H2.5v7.5h7.5V7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M7 1.5h3.5v3.5M10.5 1.5L5.5 6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <button class="panel-action-btn" id="refreshBtn" title="Reload" tabindex="-1">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M10 6A4 4 0 116 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                  <path d="M8.5 1.5L10 3l-1.5 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <div class="collapse-btn" id="previewCollapseBtn" aria-label="Collapse preview">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 4.5L6 8.5L10 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-body preview-body" id="previewBody">
+            <div class="preview-chrome">
+              <div class="chrome-dots">
+                <span class="cdot cdot-r"></span>
+                <span class="cdot cdot-y"></span>
+                <span class="cdot cdot-g"></span>
+              </div>
+              <div class="chrome-urlbar" id="chromeUrl">about:blank</div>
+              <div class="chrome-spacer"></div>
+            </div>
+            <div class="preview-viewport" id="previewViewport">
+              <iframe id="previewFrame" src="about:blank" sandbox="allow-scripts allow-same-origin allow-forms" loading="lazy" title="Website preview"></iframe>
+              <div class="preview-overlay" id="previewOverlayIdle">
+                <div class="overlay-icon">
+                  <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                    <rect x="4" y="6" width="32" height="28" rx="4" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+                    <path d="M4 13h32" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+                    <circle cx="9" cy="9.5" r="1.5" fill="currentColor" opacity="0.3"/>
+                    <circle cx="14" cy="9.5" r="1.5" fill="currentColor" opacity="0.3"/>
+                    <circle cx="19" cy="9.5" r="1.5" fill="currentColor" opacity="0.3"/>
+                  </svg>
+                </div>
+                <p class="overlay-text">Preview loads after scan</p>
+              </div>
+              <div class="preview-overlay hidden" id="previewOverlayBlocked">
+                <div class="overlay-icon warn">
+                  <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                    <circle cx="18" cy="18" r="14" stroke="#f0a500" stroke-width="1.5"/>
+                    <path d="M18 11v8M18 23v1.5" stroke="#f0a500" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <p class="overlay-text warn-text" id="blockedMsg">Site blocks iframe embedding</p>
+                <a class="overlay-link" id="blockedLink" href="#" target="_blank" rel="noopener">Open in new tab ↗</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── STATS DASHBOARD (collapsible) ── -->
+        <div class="panel" id="dashPanel">
+          <div class="panel-header" id="dashToggle" role="button" tabindex="0" aria-expanded="true" aria-controls="dashBody">
+            <div class="panel-header-left">
+              <div class="panel-icon icon-stats">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M1 11l3.5-3.5 3 2.5 5-6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <span class="panel-title">Traffic &amp; Health Analytics</span>
+              <span class="panel-badge success" id="dashBadge">Live data</span>
+            </div>
+            <div class="panel-header-right">
+              <span class="panel-meta" id="dashDomainTag">—</span>
+              <div class="collapse-btn" id="dashCollapseBtn">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 4.5L6 8.5L10 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-body" id="dashBody">
+            <!-- KPI Strip -->
+            <div class="kpi-strip">
+              <div class="kpi-card" id="kpi-0">
+                <div class="kpi-glow"></div>
+                <div class="kpi-label">GLOBAL RANK</div>
+                <div class="kpi-value" id="kv-rank">—</div>
+                <div class="kpi-sub" id="ks-rank">Worldwide</div>
+                <div class="kpi-track"><div class="kpi-fill" id="kf-rank" style="--fc:#00ff9d"></div></div>
+              </div>
+              <div class="kpi-card" id="kpi-1">
+                <div class="kpi-glow"></div>
+                <div class="kpi-label">MONTHLY VISITS</div>
+                <div class="kpi-value" id="kv-vis">—</div>
+                <div class="kpi-sub" id="ks-vis">Estimated</div>
+                <div class="kpi-track"><div class="kpi-fill" id="kf-vis" style="--fc:#4a9eff"></div></div>
+              </div>
+              <div class="kpi-card" id="kpi-2">
+                <div class="kpi-glow"></div>
+                <div class="kpi-label">UPTIME (30d)</div>
+                <div class="kpi-value" id="kv-up">—</div>
+                <div class="kpi-sub" id="ks-up">Reliability</div>
+                <div class="kpi-track"><div class="kpi-fill" id="kf-up" style="--fc:#00ff9d"></div></div>
+              </div>
+              <div class="kpi-card" id="kpi-3">
+                <div class="kpi-glow"></div>
+                <div class="kpi-label">PAGE LOAD</div>
+                <div class="kpi-value" id="kv-load">—</div>
+                <div class="kpi-sub" id="ks-load">FCP avg</div>
+                <div class="kpi-track"><div class="kpi-fill" id="kf-load" style="--fc:#f0b429"></div></div>
+              </div>
+              <div class="kpi-card" id="kpi-4">
+                <div class="kpi-glow"></div>
+                <div class="kpi-label">BOUNCE RATE</div>
+                <div class="kpi-value" id="kv-bounce">—</div>
+                <div class="kpi-sub" id="ks-bounce">Engagement</div>
+                <div class="kpi-track"><div class="kpi-fill" id="kf-bounce" style="--fc:#ff5e5e"></div></div>
+              </div>
+            </div>
+
+            <!-- Score Donuts -->
+            <div class="donut-strip">
+              <div class="donut-card">
+                <div class="donut-wrap">
+                  <svg class="donut-svg" viewBox="0 0 72 72">
+                    <circle cx="36" cy="36" r="29" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="7"/>
+                    <circle cx="36" cy="36" r="29" fill="none" stroke="#4a9eff" stroke-width="7"
+                      stroke-dasharray="182.2" stroke-dashoffset="182.2" stroke-linecap="round"
+                      style="transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1)"
+                      id="arc-seo"/>
+                  </svg>
+                  <div class="donut-val" id="dv-seo">0</div>
+                </div>
+                <div class="donut-label">SEO</div>
+              </div>
+              <div class="donut-card">
+                <div class="donut-wrap">
+                  <svg class="donut-svg" viewBox="0 0 72 72">
+                    <circle cx="36" cy="36" r="29" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="7"/>
+                    <circle cx="36" cy="36" r="29" fill="none" stroke="#00ff9d" stroke-width="7"
+                      stroke-dasharray="182.2" stroke-dashoffset="182.2" stroke-linecap="round"
+                      style="transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1)"
+                      id="arc-perf"/>
+                  </svg>
+                  <div class="donut-val" id="dv-perf">0</div>
+                </div>
+                <div class="donut-label">PERFORMANCE</div>
+              </div>
+              <div class="donut-card">
+                <div class="donut-wrap">
+                  <svg class="donut-svg" viewBox="0 0 72 72">
+                    <circle cx="36" cy="36" r="29" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="7"/>
+                    <circle cx="36" cy="36" r="29" fill="none" stroke="#ff5e5e" stroke-width="7"
+                      stroke-dasharray="182.2" stroke-dashoffset="182.2" stroke-linecap="round"
+                      style="transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1)"
+                      id="arc-sec"/>
+                  </svg>
+                  <div class="donut-val" id="dv-sec">0</div>
+                </div>
+                <div class="donut-label">SECURITY</div>
+              </div>
+              <div class="donut-card">
+                <div class="donut-wrap">
+                  <svg class="donut-svg" viewBox="0 0 72 72">
+                    <circle cx="36" cy="36" r="29" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="7"/>
+                    <circle cx="36" cy="36" r="29" fill="none" stroke="#b06aff" stroke-width="7"
+                      stroke-dasharray="182.2" stroke-dashoffset="182.2" stroke-linecap="round"
+                      style="transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1)"
+                      id="arc-a11y"/>
+                  </svg>
+                  <div class="donut-val" id="dv-a11y">0</div>
+                </div>
+                <div class="donut-label">ACCESSIBILITY</div>
+              </div>
+              <div class="donut-card">
+                <div class="donut-wrap">
+                  <svg class="donut-svg" viewBox="0 0 72 72">
+                    <circle cx="36" cy="36" r="29" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="7"/>
+                    <circle cx="36" cy="36" r="29" fill="none" stroke="#f0b429" stroke-width="7"
+                      stroke-dasharray="182.2" stroke-dashoffset="182.2" stroke-linecap="round"
+                      style="transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1)"
+                      id="arc-bp"/>
+                  </svg>
+                  <div class="donut-val" id="dv-bp">0</div>
+                </div>
+                <div class="donut-label">BEST PRACTICES</div>
+              </div>
+            </div>
+
+            <!-- Bottom row: sparkline + meta table -->
+            <div class="dash-bottom">
+              <div class="spark-panel">
+                <div class="spark-header">
+                  <span class="spark-title">TRAFFIC — 12 MONTHS</span>
+                  <div class="spark-legend">
+                    <span class="spark-dot"></span>
+                    <span class="spark-legend-txt">Monthly visitors</span>
+                  </div>
+                </div>
+                <canvas id="sparkCanvas" height="90"></canvas>
+                <div class="spark-footer">
+                  <span id="sparkLo">—</span>
+                  <span class="spark-mid-label">visits/mo</span>
+                  <span id="sparkHi">—</span>
+                </div>
+              </div>
+              <div class="meta-panel">
+                <div class="meta-row"><div class="mk">TECH STACK</div><div class="mv" id="mv-tech">—</div></div>
+                <div class="meta-row"><div class="mk">CDN</div><div class="mv" id="mv-cdn">—</div></div>
+                <div class="meta-row"><div class="mk">HOSTING</div><div class="mv" id="mv-host">—</div></div>
+                <div class="meta-row"><div class="mk">AVG SESSION</div><div class="mv" id="mv-sess">—</div></div>
+                <div class="meta-row"><div class="mk">PAGES / VISIT</div><div class="mv" id="mv-ppv">—</div></div>
+                <div class="meta-row"><div class="mk">MOBILE SHARE</div><div class="mv" id="mv-mob">—</div></div>
+                <div class="meta-row no-border"><div class="mk">SSL</div><div class="mv accent" id="mv-ssl">—</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── BUG SCAN REPORT (collapsible) ── -->
+        <div class="panel" id="bugPanel">
+          <div class="panel-header" id="bugToggle" role="button" tabindex="0" aria-expanded="true" aria-controls="bugBody">
+            <div class="panel-header-left">
+              <div class="panel-icon icon-bug">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.3"/>
+                  <path d="M5 5.5S5.5 4 7 4s2 1.5 2 1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                  <path d="M5.5 8.5h3M7 7v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <span class="panel-title">Bug Scan Report</span>
+              <span class="panel-badge danger" id="bugCountBadge">Scanning…</span>
+            </div>
+            <div class="panel-header-right">
+              <div class="health-score-inline">
+                <svg width="36" height="36" viewBox="0 0 36 36">
+                  <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="4"/>
+                  <circle cx="18" cy="18" r="14" fill="none" stroke="#00ff9d" stroke-width="4"
+                    stroke-dasharray="87.96" stroke-dashoffset="87.96" stroke-linecap="round"
+                    style="transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset 1.2s ease"
+                    id="miniArc"/>
+                </svg>
+                <span class="inline-score" id="inlineScore">—</span>
+              </div>
+              <div class="collapse-btn" id="bugCollapseBtn">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 4.5L6 8.5L10 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-body" id="bugBody">
+            <!-- Score bar -->
+            <div class="score-bar-row">
+              <div class="score-ring-big">
+                <svg width="100" height="100" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="#00ff9d" stroke-width="8"
+                    stroke-dasharray="263.9" stroke-dashoffset="263.9" stroke-linecap="round"
+                    style="transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset 1.3s cubic-bezier(.4,0,.2,1)"
+                    id="bigArc"/>
+                </svg>
+                <div class="big-score-num" id="bigScoreNum">—</div>
+              </div>
+              <div class="score-info">
+                <div class="score-domain" id="scoreDomain">—</div>
+                <div class="score-verdict" id="scoreVerdict">—</div>
+                <div class="score-counts">
+                  <span class="count-pill danger" id="cntCrit">0 Critical</span>
+                  <span class="count-pill warn" id="cntHigh">0 High</span>
+                  <span class="count-pill info" id="cntOther">0 Med/Low</span>
+                </div>
+              </div>
+            </div>
+            <div class="summary-box" id="summaryBox"></div>
+            <div class="bug-sections" id="bugSections"></div>
+          </div>
+        </div>
+
+      </div><!-- /results-zone -->
+    </div><!-- /page-wrap -->
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
