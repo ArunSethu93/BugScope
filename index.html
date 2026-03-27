@@ -13,12 +13,127 @@
 
   <!-- Ambient background -->
   <canvas id="bgCanvas" aria-hidden="true"></canvas>
-  <div class="scan-line" id="scanLine" aria-hidden="true"></div>
+  <div class="scan-line" aria-hidden="true"></div>
   <div class="top-progress" id="topProgress" aria-hidden="true"></div>
 
-  <!-- Custom cursor -->
-  <div class="cursor" id="cursor"></div>
-  <div class="cursor-trail" id="cursorTrail"></div>
+  <!-- Toast container -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <!-- Keyboard shortcut hint -->
+  <div class="kbd-hint" id="kbdHint">
+    <span class="kbd">⌘K</span> focus · <span class="kbd">Esc</span> clear · <span class="kbd">⌘E</span> export
+  </div>
+
+  <!-- History Drawer -->
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+  <aside class="history-drawer" id="historyDrawer" aria-label="Scan history">
+    <div class="drawer-header">
+      <span class="drawer-title">Scan History</span>
+      <button class="drawer-close" id="drawerClose" aria-label="Close history">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+    <div class="drawer-body" id="drawerBody">
+      <p class="drawer-empty" id="drawerEmpty">No scans yet. Run your first scan!</p>
+    </div>
+    <div class="drawer-footer">
+      <button class="drawer-clear-btn" id="drawerClearBtn">Clear all history</button>
+    </div>
+  </aside>
+
+  <!-- Export modal -->
+  <div class="modal-backdrop hidden" id="exportBackdrop">
+    <div class="export-modal" id="exportModal" role="dialog" aria-modal="true" aria-label="Export report">
+      <div class="modal-header">
+        <span class="modal-title">Export Report</span>
+        <button class="modal-close" id="exportClose" aria-label="Close">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <path d="M1.5 1.5l10 10M11.5 1.5l-10 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <button class="export-option" id="exportJson">
+          <div class="eo-icon">{ }</div>
+          <div class="eo-info">
+            <span class="eo-title">JSON Report</span>
+            <span class="eo-sub">Full structured data — perfect for CI/CD pipelines</span>
+          </div>
+          <svg class="eo-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button class="export-option" id="exportMarkdown">
+          <div class="eo-icon">MD</div>
+          <div class="eo-info">
+            <span class="eo-title">Markdown Report</span>
+            <span class="eo-sub">Paste directly into GitHub issues or Notion</span>
+          </div>
+          <svg class="eo-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button class="export-option" id="exportClipboard">
+          <div class="eo-icon">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+              <rect x="4" y="3" width="9" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M4 5H3a1 1 0 00-1 1v7a1 1 0 001 1h7a1 1 0 001-1v-1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="eo-info">
+            <span class="eo-title">Copy to Clipboard</span>
+            <span class="eo-sub">Quick copy as formatted text summary</span>
+          </div>
+          <svg class="eo-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button class="export-option" id="shareUrl">
+          <div class="eo-icon">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+              <circle cx="11.5" cy="3.5" r="1.8" stroke="currentColor" stroke-width="1.3"/>
+              <circle cx="3.5" cy="7.5" r="1.8" stroke="currentColor" stroke-width="1.3"/>
+              <circle cx="11.5" cy="11.5" r="1.8" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M5.2 8.4l4 2.2M5.2 6.6l4-2.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="eo-info">
+            <span class="eo-title">Share Link</span>
+            <span class="eo-sub">Copy a URL with the scanned domain pre-filled</span>
+          </div>
+          <svg class="eo-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Keyboard shortcuts modal -->
+  <div class="modal-backdrop hidden" id="shortcutsBackdrop">
+    <div class="shortcuts-modal" id="shortcutsModal" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
+      <div class="modal-header">
+        <span class="modal-title">Keyboard Shortcuts</span>
+        <button class="modal-close" id="shortcutsClose" aria-label="Close">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <path d="M1.5 1.5l10 10M11.5 1.5l-10 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="shortcuts-grid">
+        <div class="sc-row"><kbd>⌘ K</kbd><span>Focus URL input</span></div>
+        <div class="sc-row"><kbd>Enter</kbd><span>Start scan</span></div>
+        <div class="sc-row"><kbd>Esc</kbd><span>Clear input / close modals</span></div>
+        <div class="sc-row"><kbd>⌘ E</kbd><span>Export report</span></div>
+        <div class="sc-row"><kbd>⌘ H</kbd><span>Open scan history</span></div>
+        <div class="sc-row"><kbd>⌘ /</kbd><span>Show this panel</span></div>
+        <div class="sc-row"><kbd>⌘ 1–3</kbd><span>Collapse panel 1 / 2 / 3</span></div>
+        <div class="sc-row"><kbd>Tab</kbd><span>Navigate bug filter tabs</span></div>
+      </div>
+    </div>
+  </div>
 
   <main class="app">
 
@@ -34,381 +149,343 @@
             </svg>
           </div>
           <span class="brand-name">Bug<em>Scope</em></span>
-          <span class="brand-ver">v2.1</span>
+          <span class="brand-ver">v3.0</span>
         </div>
+
         <nav class="header-nav">
           <span class="nav-pill active">Scanner</span>
-          <span class="nav-pill">Reports</span>
-          <span class="nav-pill">API</span>
+          <span class="nav-pill" id="navHistory">History</span>
+          <span class="nav-pill" id="navShortcuts">Shortcuts</span>
         </nav>
-        <div class="header-status">
-          <span class="status-dot"></span>
-          <span class="status-txt">All systems online</span>
+
+        <div class="header-actions">
+          <div class="header-status">
+            <span class="status-dot"></span>
+            <span class="status-txt" id="statusTxt">Ready</span>
+          </div>
+          <button class="icon-btn" id="historyBtn" title="Scan history (⌘H)" aria-label="Scan history">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+              <circle cx="7.5" cy="7.5" r="6" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M7.5 4.5V8l2.5 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="icon-btn-badge" id="historyBadge" aria-label="scans in history"></span>
+          </button>
+          <button class="icon-btn" id="exportBtn" title="Export report (⌘E)" aria-label="Export" disabled>
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+              <path d="M7.5 1v9M4 7l3.5 3.5L11 7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 11v1.5A1.5 1.5 0 003.5 14h8a1.5 1.5 0 001.5-1.5V11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+          </button>
         </div>
       </div>
     </header>
 
     <div class="page-wrap">
 
-      <!-- ══ HERO SCAN ══ -->
+      <!-- ══ HERO ══ -->
       <section class="hero" id="heroSection">
-        <div class="hero-label">WEBSITE INTELLIGENCE PLATFORM</div>
+        <div class="hero-eyebrow">
+          <span class="eyebrow-dot"></span>
+          WEBSITE INTELLIGENCE PLATFORM
+        </div>
         <h1 class="hero-title">
-          Scan. Analyse.<br/><span class="hero-accent">Dominate bugs.</span>
+          Scan. Analyse.<br/>
+          <span class="hero-stroke">Dominate bugs.</span>
         </h1>
-        <p class="hero-sub">Drop any URL — get AI-powered frontend, backend &amp; security insights in seconds.</p>
+        <p class="hero-sub">AI-powered frontend, backend &amp; security insights with live traffic analytics.</p>
 
+        <!-- Scan card -->
         <div class="scan-card" id="scanCard">
+          <div class="scan-glow"></div>
           <div class="scan-input-row">
-            <div class="input-prefix">
+            <div class="input-icon">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.4"/>
                 <path d="M9.5 9.5L12 12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
               </svg>
             </div>
-            <input
-              class="scan-input"
-              id="urlInput"
-              type="text"
+            <input class="scan-input" id="urlInput" type="text"
               placeholder="https://your-website.com"
-              autocomplete="off"
-              spellcheck="false"
-            />
+              autocomplete="off" spellcheck="false"
+              aria-label="Website URL to scan"/>
+            <div class="input-clear" id="inputClear" title="Clear (Esc)" aria-label="Clear input">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                <path d="M1 1l8 8M9 1L1 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+            </div>
             <button class="scan-btn" id="scanBtn" aria-label="Start scan">
-              <span class="scan-btn-text">Scan</span>
-              <span class="scan-btn-icon">
+              <span class="scan-btn-label">Scan</span>
+              <div class="scan-btn-spinner" id="scanSpinner" aria-hidden="true">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.5" opacity="0.25"/>
+                  <path d="M7 1.5A5.5 5.5 0 0112.5 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                 </svg>
-              </span>
-              <div class="btn-ripple" id="btnRipple"></div>
+              </div>
             </button>
           </div>
 
-          <div class="scan-progress-wrap" id="scanProgressWrap">
-            <div class="scan-steps" id="scanSteps"></div>
-            <div class="scan-bar-wrap">
-              <div class="scan-bar" id="scanBar"></div>
+          <!-- Step messages + bar -->
+          <div class="scan-progress" id="scanProgress">
+            <div class="step-msg" id="stepMsg"></div>
+            <div class="progress-track">
+              <div class="progress-fill" id="progressFill"></div>
             </div>
           </div>
 
-          <div class="error-msg" id="errorMsg"></div>
+          <div class="error-bar" id="errorBar"></div>
 
-          <div class="quick-links" id="quickLinks">
-            <span class="ql-label">Try:</span>
-            <button class="ql-btn" data-url="https://github.com">github.com</button>
-            <button class="ql-btn" data-url="https://stripe.com">stripe.com</button>
-            <button class="ql-btn" data-url="https://vercel.com">vercel.com</button>
-            <button class="ql-btn" data-url="https://notion.so">notion.so</button>
+          <!-- Quick links -->
+          <div class="quick-row">
+            <span class="quick-label">Try:</span>
+            <button class="ql" data-url="https://github.com">github.com</button>
+            <button class="ql" data-url="https://stripe.com">stripe.com</button>
+            <button class="ql" data-url="https://vercel.com">vercel.com</button>
+            <button class="ql" data-url="https://linear.app">linear.app</button>
+            <button class="ql" data-url="https://figma.com">figma.com</button>
           </div>
+        </div>
+
+        <!-- Benchmark strip (shows after scan) -->
+        <div class="benchmark-strip hidden" id="benchmarkStrip">
+          <span class="bm-label">vs Industry Avg →</span>
+          <div class="bm-items" id="bmItems"></div>
         </div>
       </section>
 
       <!-- ══ RESULTS ZONE ══ -->
       <div class="results-zone" id="resultsZone">
 
-        <!-- ── COLLAPSIBLE PREVIEW PANEL ── -->
-        <div class="panel" id="previewPanel">
-          <div class="panel-header" id="previewToggle" role="button" tabindex="0" aria-expanded="true" aria-controls="previewBody">
-            <div class="panel-header-left">
-              <div class="panel-icon icon-preview">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <rect x="1" y="2" width="12" height="10" rx="2" stroke="currentColor" stroke-width="1.3"/>
-                  <path d="M1 5h12" stroke="currentColor" stroke-width="1.3"/>
-                  <circle cx="3.5" cy="3.5" r="0.8" fill="currentColor"/>
-                  <circle cx="5.8" cy="3.5" r="0.8" fill="currentColor"/>
+        <!-- ── COLLAPSIBLE PREVIEW ── -->
+        <div class="panel" id="previewPanel" data-panel="1">
+          <div class="panel-hdr" id="previewHdr">
+            <div class="ph-left">
+              <div class="ph-icon i-blue">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                  <rect x="1" y="1.5" width="11" height="10" rx="2" stroke="currentColor" stroke-width="1.3"/>
+                  <path d="M1 4.5h11" stroke="currentColor" stroke-width="1.3"/>
+                  <circle cx="3" cy="3" r="0.7" fill="currentColor"/>
+                  <circle cx="5" cy="3" r="0.7" fill="currentColor"/>
                 </svg>
               </div>
-              <span class="panel-title">Live Preview</span>
-              <span class="panel-badge" id="previewBadge">Loading…</span>
+              <span class="ph-title">Live Preview</span>
+              <span class="ph-badge" id="pvBadge">—</span>
             </div>
-            <div class="panel-header-right">
-              <span class="panel-url" id="previewUrl"></span>
-              <button class="panel-action-btn" id="newTabBtn" title="Open in new tab" tabindex="-1">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path d="M5 2H2.5v7.5h7.5V7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M7 1.5h3.5v3.5M10.5 1.5L5.5 6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </button>
-              <button class="panel-action-btn" id="refreshBtn" title="Reload" tabindex="-1">
+            <div class="ph-right">
+              <span class="ph-url" id="pvUrl"></span>
+              <button class="hdr-btn" id="refreshBtn" title="Refresh" aria-label="Refresh preview">
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                   <path d="M10 6A4 4 0 116 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
                   <path d="M8.5 1.5L10 3l-1.5 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </button>
-              <div class="collapse-btn" id="previewCollapseBtn" aria-label="Collapse preview">
+              <button class="hdr-btn" id="newTabBtn" title="Open in new tab" aria-label="Open site in new tab">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M5 2H2.5v7.5h7.5V7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M7 1.5h3.5v3.5M10.5 1.5L5.5 6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <button class="collapse-chevron" id="pvChevron" aria-label="Collapse panel" aria-expanded="true">
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                   <path d="M2 4.5L6 8.5L10 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-              </div>
+              </button>
             </div>
           </div>
-
-          <div class="panel-body preview-body" id="previewBody">
-            <div class="preview-chrome">
+          <div class="panel-body npad" id="pvBody">
+            <div class="chrome-bar">
               <div class="chrome-dots">
-                <span class="cdot cdot-r"></span>
-                <span class="cdot cdot-y"></span>
-                <span class="cdot cdot-g"></span>
+                <span class="cd cd-r"></span><span class="cd cd-y"></span><span class="cd cd-g"></span>
               </div>
-              <div class="chrome-urlbar" id="chromeUrl">about:blank</div>
-              <div class="chrome-spacer"></div>
+              <div class="chrome-addr" id="chromeAddr">about:blank</div>
+              <div class="chrome-end"></div>
             </div>
-            <div class="preview-viewport" id="previewViewport">
-              <iframe id="previewFrame" src="about:blank" sandbox="allow-scripts allow-same-origin allow-forms" loading="lazy" title="Website preview"></iframe>
-              <div class="preview-overlay" id="previewOverlayIdle">
-                <div class="overlay-icon">
-                  <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                    <rect x="4" y="6" width="32" height="28" rx="4" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
-                    <path d="M4 13h32" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
-                    <circle cx="9" cy="9.5" r="1.5" fill="currentColor" opacity="0.3"/>
-                    <circle cx="14" cy="9.5" r="1.5" fill="currentColor" opacity="0.3"/>
-                    <circle cx="19" cy="9.5" r="1.5" fill="currentColor" opacity="0.3"/>
-                  </svg>
-                </div>
-                <p class="overlay-text">Preview loads after scan</p>
+            <div class="pv-viewport" id="pvViewport">
+              <iframe id="pvFrame" src="about:blank" sandbox="allow-scripts allow-same-origin allow-forms" loading="lazy" title="Website preview"></iframe>
+              <div class="pv-overlay" id="pvIdle">
+                <svg width="38" height="38" viewBox="0 0 38 38" fill="none" opacity="0.3">
+                  <rect x="3" y="5" width="32" height="28" rx="4" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M3 12h32" stroke="currentColor" stroke-width="1.5"/>
+                  <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
+                  <circle cx="13.5" cy="8.5" r="1.5" fill="currentColor"/>
+                  <circle cx="18.5" cy="8.5" r="1.5" fill="currentColor"/>
+                </svg>
+                <p>Preview loads after scan</p>
               </div>
-              <div class="preview-overlay hidden" id="previewOverlayBlocked">
-                <div class="overlay-icon warn">
-                  <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-                    <circle cx="18" cy="18" r="14" stroke="#f0a500" stroke-width="1.5"/>
-                    <path d="M18 11v8M18 23v1.5" stroke="#f0a500" stroke-width="2" stroke-linecap="round"/>
-                  </svg>
-                </div>
-                <p class="overlay-text warn-text" id="blockedMsg">Site blocks iframe embedding</p>
-                <a class="overlay-link" id="blockedLink" href="#" target="_blank" rel="noopener">Open in new tab ↗</a>
+              <div class="pv-overlay hidden" id="pvBlocked">
+                <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+                  <circle cx="17" cy="17" r="13" stroke="#f0b429" stroke-width="1.5"/>
+                  <path d="M17 10v8M17 22v1.5" stroke="#f0b429" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <p class="warn-p" id="blockedMsg">Site blocks iframe embedding</p>
+                <a class="pv-link" id="blockedLink" href="#" target="_blank" rel="noopener">Open in new tab ↗</a>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- ── STATS DASHBOARD (collapsible) ── -->
-        <div class="panel" id="dashPanel">
-          <div class="panel-header" id="dashToggle" role="button" tabindex="0" aria-expanded="true" aria-controls="dashBody">
-            <div class="panel-header-left">
-              <div class="panel-icon icon-stats">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M1 11l3.5-3.5 3 2.5 5-6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- ── STATS DASHBOARD ── -->
+        <div class="panel" id="dashPanel" data-panel="2">
+          <div class="panel-hdr" id="dashHdr">
+            <div class="ph-left">
+              <div class="ph-icon i-green">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                  <path d="M1 10l3-3 2.5 2 4-5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </div>
-              <span class="panel-title">Traffic &amp; Health Analytics</span>
-              <span class="panel-badge success" id="dashBadge">Live data</span>
+              <span class="ph-title">Traffic &amp; Health Analytics</span>
+              <span class="ph-badge green" id="dashBadge">Live data</span>
             </div>
-            <div class="panel-header-right">
-              <span class="panel-meta" id="dashDomainTag">—</span>
-              <div class="collapse-btn" id="dashCollapseBtn">
+            <div class="ph-right">
+              <span class="ph-meta" id="dashDomain">—</span>
+              <button class="collapse-chevron" id="dashChevron" aria-label="Collapse panel" aria-expanded="true">
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                   <path d="M2 4.5L6 8.5L10 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-              </div>
+              </button>
             </div>
           </div>
-
           <div class="panel-body" id="dashBody">
-            <!-- KPI Strip -->
-            <div class="kpi-strip">
-              <div class="kpi-card" id="kpi-0">
-                <div class="kpi-glow"></div>
-                <div class="kpi-label">GLOBAL RANK</div>
-                <div class="kpi-value" id="kv-rank">—</div>
-                <div class="kpi-sub" id="ks-rank">Worldwide</div>
-                <div class="kpi-track"><div class="kpi-fill" id="kf-rank" style="--fc:#00ff9d"></div></div>
-              </div>
-              <div class="kpi-card" id="kpi-1">
-                <div class="kpi-glow"></div>
-                <div class="kpi-label">MONTHLY VISITS</div>
-                <div class="kpi-value" id="kv-vis">—</div>
-                <div class="kpi-sub" id="ks-vis">Estimated</div>
-                <div class="kpi-track"><div class="kpi-fill" id="kf-vis" style="--fc:#4a9eff"></div></div>
-              </div>
-              <div class="kpi-card" id="kpi-2">
-                <div class="kpi-glow"></div>
-                <div class="kpi-label">UPTIME (30d)</div>
-                <div class="kpi-value" id="kv-up">—</div>
-                <div class="kpi-sub" id="ks-up">Reliability</div>
-                <div class="kpi-track"><div class="kpi-fill" id="kf-up" style="--fc:#00ff9d"></div></div>
-              </div>
-              <div class="kpi-card" id="kpi-3">
-                <div class="kpi-glow"></div>
-                <div class="kpi-label">PAGE LOAD</div>
-                <div class="kpi-value" id="kv-load">—</div>
-                <div class="kpi-sub" id="ks-load">FCP avg</div>
-                <div class="kpi-track"><div class="kpi-fill" id="kf-load" style="--fc:#f0b429"></div></div>
-              </div>
-              <div class="kpi-card" id="kpi-4">
-                <div class="kpi-glow"></div>
-                <div class="kpi-label">BOUNCE RATE</div>
-                <div class="kpi-value" id="kv-bounce">—</div>
-                <div class="kpi-sub" id="ks-bounce">Engagement</div>
-                <div class="kpi-track"><div class="kpi-fill" id="kf-bounce" style="--fc:#ff5e5e"></div></div>
-              </div>
+
+            <!-- KPI row -->
+            <div class="kpi-row">
+              <div class="kpi" id="k0"><div class="kpi-g"></div><div class="kpi-lbl">GLOBAL RANK</div><div class="kpi-val" id="kv0">—</div><div class="kpi-sub" id="ks0">—</div><div class="kpi-bar"><div class="kpi-fill" id="kf0" style="--c:#00ff9d"></div></div></div>
+              <div class="kpi" id="k1"><div class="kpi-g"></div><div class="kpi-lbl">MONTHLY VISITS</div><div class="kpi-val" id="kv1">—</div><div class="kpi-sub" id="ks1">—</div><div class="kpi-bar"><div class="kpi-fill" id="kf1" style="--c:#4a9eff"></div></div></div>
+              <div class="kpi" id="k2"><div class="kpi-g"></div><div class="kpi-lbl">UPTIME 30d</div><div class="kpi-val" id="kv2">—</div><div class="kpi-sub" id="ks2">—</div><div class="kpi-bar"><div class="kpi-fill" id="kf2" style="--c:#00ff9d"></div></div></div>
+              <div class="kpi" id="k3"><div class="kpi-g"></div><div class="kpi-lbl">PAGE LOAD</div><div class="kpi-val" id="kv3">—</div><div class="kpi-sub" id="ks3">—</div><div class="kpi-bar"><div class="kpi-fill" id="kf3" style="--c:#f0b429"></div></div></div>
+              <div class="kpi" id="k4"><div class="kpi-g"></div><div class="kpi-lbl">BOUNCE RATE</div><div class="kpi-val" id="kv4">—</div><div class="kpi-sub" id="ks4">—</div><div class="kpi-bar"><div class="kpi-fill" id="kf4" style="--c:#ff5e5e"></div></div></div>
             </div>
 
-            <!-- Score Donuts -->
-            <div class="donut-strip">
-              <div class="donut-card">
-                <div class="donut-wrap">
-                  <svg class="donut-svg" viewBox="0 0 72 72">
-                    <circle cx="36" cy="36" r="29" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="7"/>
-                    <circle cx="36" cy="36" r="29" fill="none" stroke="#4a9eff" stroke-width="7"
-                      stroke-dasharray="182.2" stroke-dashoffset="182.2" stroke-linecap="round"
-                      style="transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1)"
-                      id="arc-seo"/>
-                  </svg>
-                  <div class="donut-val" id="dv-seo">0</div>
+            <!-- Radar + Sparkline -->
+            <div class="chart-row">
+              <div class="radar-card">
+                <div class="card-title">SCORE RADAR</div>
+                <div class="radar-wrap">
+                  <canvas id="radarCanvas" width="260" height="240"></canvas>
                 </div>
-                <div class="donut-label">SEO</div>
               </div>
-              <div class="donut-card">
-                <div class="donut-wrap">
-                  <svg class="donut-svg" viewBox="0 0 72 72">
-                    <circle cx="36" cy="36" r="29" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="7"/>
-                    <circle cx="36" cy="36" r="29" fill="none" stroke="#00ff9d" stroke-width="7"
-                      stroke-dasharray="182.2" stroke-dashoffset="182.2" stroke-linecap="round"
-                      style="transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1)"
-                      id="arc-perf"/>
-                  </svg>
-                  <div class="donut-val" id="dv-perf">0</div>
+              <div class="spark-card">
+                <div class="spark-hdr">
+                  <span class="card-title">TRAFFIC TREND — 12 MONTHS</span>
+                  <div class="spark-legend"><span class="sl-dot"></span><span>Monthly visitors</span></div>
                 </div>
-                <div class="donut-label">PERFORMANCE</div>
-              </div>
-              <div class="donut-card">
-                <div class="donut-wrap">
-                  <svg class="donut-svg" viewBox="0 0 72 72">
-                    <circle cx="36" cy="36" r="29" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="7"/>
-                    <circle cx="36" cy="36" r="29" fill="none" stroke="#ff5e5e" stroke-width="7"
-                      stroke-dasharray="182.2" stroke-dashoffset="182.2" stroke-linecap="round"
-                      style="transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1)"
-                      id="arc-sec"/>
-                  </svg>
-                  <div class="donut-val" id="dv-sec">0</div>
-                </div>
-                <div class="donut-label">SECURITY</div>
-              </div>
-              <div class="donut-card">
-                <div class="donut-wrap">
-                  <svg class="donut-svg" viewBox="0 0 72 72">
-                    <circle cx="36" cy="36" r="29" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="7"/>
-                    <circle cx="36" cy="36" r="29" fill="none" stroke="#b06aff" stroke-width="7"
-                      stroke-dasharray="182.2" stroke-dashoffset="182.2" stroke-linecap="round"
-                      style="transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1)"
-                      id="arc-a11y"/>
-                  </svg>
-                  <div class="donut-val" id="dv-a11y">0</div>
-                </div>
-                <div class="donut-label">ACCESSIBILITY</div>
-              </div>
-              <div class="donut-card">
-                <div class="donut-wrap">
-                  <svg class="donut-svg" viewBox="0 0 72 72">
-                    <circle cx="36" cy="36" r="29" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="7"/>
-                    <circle cx="36" cy="36" r="29" fill="none" stroke="#f0b429" stroke-width="7"
-                      stroke-dasharray="182.2" stroke-dashoffset="182.2" stroke-linecap="round"
-                      style="transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1)"
-                      id="arc-bp"/>
-                  </svg>
-                  <div class="donut-val" id="dv-bp">0</div>
-                </div>
-                <div class="donut-label">BEST PRACTICES</div>
-              </div>
-            </div>
-
-            <!-- Bottom row: sparkline + meta table -->
-            <div class="dash-bottom">
-              <div class="spark-panel">
-                <div class="spark-header">
-                  <span class="spark-title">TRAFFIC — 12 MONTHS</span>
-                  <div class="spark-legend">
-                    <span class="spark-dot"></span>
-                    <span class="spark-legend-txt">Monthly visitors</span>
-                  </div>
-                </div>
-                <canvas id="sparkCanvas" height="90"></canvas>
+                <canvas id="sparkCanvas" height="120" style="width:100%;display:block"></canvas>
                 <div class="spark-footer">
-                  <span id="sparkLo">—</span>
-                  <span class="spark-mid-label">visits/mo</span>
-                  <span id="sparkHi">—</span>
+                  <span id="spLo">—</span>
+                  <span class="sf-mid">visits/mo</span>
+                  <span id="spHi">—</span>
                 </div>
               </div>
-              <div class="meta-panel">
-                <div class="meta-row"><div class="mk">TECH STACK</div><div class="mv" id="mv-tech">—</div></div>
-                <div class="meta-row"><div class="mk">CDN</div><div class="mv" id="mv-cdn">—</div></div>
-                <div class="meta-row"><div class="mk">HOSTING</div><div class="mv" id="mv-host">—</div></div>
-                <div class="meta-row"><div class="mk">AVG SESSION</div><div class="mv" id="mv-sess">—</div></div>
-                <div class="meta-row"><div class="mk">PAGES / VISIT</div><div class="mv" id="mv-ppv">—</div></div>
-                <div class="meta-row"><div class="mk">MOBILE SHARE</div><div class="mv" id="mv-mob">—</div></div>
-                <div class="meta-row no-border"><div class="mk">SSL</div><div class="mv accent" id="mv-ssl">—</div></div>
+            </div>
+
+            <!-- Meta row -->
+            <div class="meta-row-grid">
+              <div class="meta-card">
+                <div class="meta-r"><div class="mk">TECH STACK</div><div class="mv" id="mv0">—</div></div>
+                <div class="meta-r"><div class="mk">CDN</div><div class="mv" id="mv1">—</div></div>
+                <div class="meta-r nb"><div class="mk">HOSTING</div><div class="mv" id="mv2">—</div></div>
+              </div>
+              <div class="meta-card">
+                <div class="meta-r"><div class="mk">AVG SESSION</div><div class="mv" id="mv3">—</div></div>
+                <div class="meta-r"><div class="mk">PAGES / VISIT</div><div class="mv" id="mv4">—</div></div>
+                <div class="meta-r nb"><div class="mk">MOBILE SHARE</div><div class="mv" id="mv5">—</div></div>
+              </div>
+              <div class="meta-card">
+                <div class="meta-r"><div class="mk">SSL CERT</div><div class="mv acc" id="mv6">—</div></div>
+                <div class="meta-r"><div class="mk">HTTP/2</div><div class="mv acc" id="mv7">—</div></div>
+                <div class="meta-r nb"><div class="mk">BROTLI</div><div class="mv acc" id="mv8">—</div></div>
               </div>
             </div>
+
           </div>
         </div>
 
-        <!-- ── BUG SCAN REPORT (collapsible) ── -->
-        <div class="panel" id="bugPanel">
-          <div class="panel-header" id="bugToggle" role="button" tabindex="0" aria-expanded="true" aria-controls="bugBody">
-            <div class="panel-header-left">
-              <div class="panel-icon icon-bug">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.3"/>
-                  <path d="M5 5.5S5.5 4 7 4s2 1.5 2 1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                  <path d="M5.5 8.5h3M7 7v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        <!-- ── BUG REPORT ── -->
+        <div class="panel" id="bugPanel" data-panel="3">
+          <div class="panel-hdr" id="bugHdr">
+            <div class="ph-left">
+              <div class="ph-icon i-red">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                  <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.3"/>
+                  <path d="M6.5 3.5v3.5l2 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </div>
-              <span class="panel-title">Bug Scan Report</span>
-              <span class="panel-badge danger" id="bugCountBadge">Scanning…</span>
+              <span class="ph-title">Bug Scan Report</span>
+              <span class="ph-badge" id="bugBadge">Scanning…</span>
             </div>
-            <div class="panel-header-right">
-              <div class="health-score-inline">
-                <svg width="36" height="36" viewBox="0 0 36 36">
-                  <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="4"/>
-                  <circle cx="18" cy="18" r="14" fill="none" stroke="#00ff9d" stroke-width="4"
-                    stroke-dasharray="87.96" stroke-dashoffset="87.96" stroke-linecap="round"
+            <div class="ph-right">
+              <div class="mini-ring">
+                <svg width="38" height="38" viewBox="0 0 38 38">
+                  <circle cx="19" cy="19" r="15" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="4.5"/>
+                  <circle cx="19" cy="19" r="15" fill="none" stroke="#00ff9d" stroke-width="4.5"
+                    stroke-dasharray="94.25" stroke-dashoffset="94.25" stroke-linecap="round"
                     style="transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset 1.2s ease"
                     id="miniArc"/>
                 </svg>
-                <span class="inline-score" id="inlineScore">—</span>
+                <span class="mini-score" id="miniScore">—</span>
               </div>
-              <div class="collapse-btn" id="bugCollapseBtn">
+              <button class="collapse-chevron" id="bugChevron" aria-label="Collapse panel" aria-expanded="true">
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                   <path d="M2 4.5L6 8.5L10 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-              </div>
+              </button>
             </div>
           </div>
-
           <div class="panel-body" id="bugBody">
-            <!-- Score bar -->
-            <div class="score-bar-row">
-              <div class="score-ring-big">
-                <svg width="100" height="100" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
-                  <circle cx="50" cy="50" r="42" fill="none" stroke="#00ff9d" stroke-width="8"
-                    stroke-dasharray="263.9" stroke-dashoffset="263.9" stroke-linecap="round"
+
+            <!-- Score hero -->
+            <div class="score-hero">
+              <div class="big-ring">
+                <svg width="110" height="110" viewBox="0 0 110 110">
+                  <circle cx="55" cy="55" r="47" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="9"/>
+                  <circle cx="55" cy="55" r="47" fill="none" stroke="#00ff9d" stroke-width="9"
+                    stroke-dasharray="295.3" stroke-dashoffset="295.3" stroke-linecap="round"
                     style="transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset 1.3s cubic-bezier(.4,0,.2,1)"
                     id="bigArc"/>
                 </svg>
-                <div class="big-score-num" id="bigScoreNum">—</div>
+                <div class="big-score" id="bigScore">—</div>
+                <div class="big-label">/ 100</div>
               </div>
-              <div class="score-info">
+              <div class="score-meta">
                 <div class="score-domain" id="scoreDomain">—</div>
                 <div class="score-verdict" id="scoreVerdict">—</div>
-                <div class="score-counts">
-                  <span class="count-pill danger" id="cntCrit">0 Critical</span>
-                  <span class="count-pill warn" id="cntHigh">0 High</span>
-                  <span class="count-pill info" id="cntOther">0 Med/Low</span>
+                <div class="score-pills">
+                  <span class="pill danger" id="pCrit">0 Critical</span>
+                  <span class="pill warn" id="pHigh">0 High</span>
+                  <span class="pill info" id="pOther">0 Med/Low</span>
+                </div>
+                <div class="score-actions">
+                  <button class="sa-btn" id="collapseAllBugs" title="Collapse all sections">Collapse all</button>
+                  <button class="sa-btn" id="expandAllBugs" title="Expand all sections">Expand all</button>
                 </div>
               </div>
             </div>
+
+            <!-- Summary -->
             <div class="summary-box" id="summaryBox"></div>
+
+            <!-- Filter tabs -->
+            <div class="filter-tabs" id="filterTabs" role="tablist">
+              <button class="ftab active" data-filter="all" role="tab" aria-selected="true">All</button>
+              <button class="ftab" data-filter="critical" role="tab">Critical</button>
+              <button class="ftab" data-filter="high" role="tab">High</button>
+              <button class="ftab" data-filter="medium" role="tab">Medium</button>
+              <button class="ftab" data-filter="low" role="tab">Low</button>
+              <div class="ftab-track" id="ftabTrack"></div>
+            </div>
+
+            <!-- Bug sections -->
             <div class="bug-sections" id="bugSections"></div>
+
           </div>
         </div>
 
-      </div><!-- /results-zone -->
+      </div><!-- /resultsZone -->
     </div><!-- /page-wrap -->
-
   </main>
 
+  <!-- Dependencies -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
