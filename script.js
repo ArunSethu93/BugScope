@@ -3,9 +3,7 @@
 */
 'use strict';
 
-/* ══════════════════════════════════════════════
-   GLOBALS
-══════════════════════════════════════════════ */
+
 let _scanData = null;   // last full scan result
 let _scanUrl = '';     // last scanned URL
 let _radarChart = null;   // Chart.js instance
